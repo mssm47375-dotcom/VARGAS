@@ -282,15 +282,52 @@ if (contactForm) {
     e.preventDefault();
     const status = contactForm.querySelector(".form-status");
     const submitBtn = contactForm.querySelector("button[type='submit']");
+    
     submitBtn.disabled = true;
     submitBtn.textContent = "Envoi...";
-    setTimeout(() => {
+
+    // Ton URL de Webhook complète (le token y est déjà inclus)
+    const webhookUrl = "https://discord.com/api/webhooks/1525169351240450238/8NxhjD6vOoCs-_FbEPwLLbt1FJfS2AXih4_c1wTVntWMX9cptfrf9H2mRG2Rt7Pnqr-g";
+
+    const payload = {
+      embeds: [{
+        title: "📥 Nouveau message - Citro",
+        color: 16764928,
+        fields: [
+          { name: "👤 Nom", value: document.getElementById('name').value, inline: true },
+          { name: "✉️ Email", value: document.getElementById('email').value, inline: true },
+          { name: "📌 Sujet", value: document.getElementById('subject').value },
+          { name: "💬 Message", value: document.getElementById('message').value }
+        ],
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
       submitBtn.disabled = false;
       submitBtn.textContent = "Envoyer le message";
       contactForm.reset();
-      if (status) status.textContent = "Message envoyé ! Nous revenons vers vous rapidement.";
+      
+      if (status) status.textContent = "Message envoyé ! Redirection vers Discord...";
       showToast("Message envoyé ✓", "success");
-    }, 900);
+
+      // Redirection immédiate de l'utilisateur vers Discord
+      setTimeout(() => {
+        window.location.href = "https://discord.com/"; // Remplace par ton lien d'invitation Discord direct si besoin
+      }, 800);
+    })
+    .catch((err) => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Envoyer le message";
+      if (status) status.textContent = "Une erreur est survenue lors de l'envoi.";
+      showToast("Erreur d'envoi ❌", "error");
+      console.error(err);
+    });
   });
 }
 
