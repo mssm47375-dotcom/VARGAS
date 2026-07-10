@@ -318,7 +318,7 @@ if (contactForm) {
 
       // Redirection immédiate de l'utilisateur vers Discord
       setTimeout(() => {
-        window.location.href = "https://discord.com/"; // Remplace par ton lien d'invitation Discord direct si besoin
+        window.location.href = "https://discord.gg/6PSvwyycYh"; // Remplace par ton lien d'invitation Discord direct si besoin
       }, 800);
     })
     .catch((err) => {
