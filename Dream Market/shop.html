@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boutique — Citro</title>
+  <meta name="description" content="Parcourez tous nos produits Discord : Nitro, boosts, comptes premium et personnalisation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="animations.css">
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+</head>
+<body>
+
+  <div class="loader"><div class="loader-sun"></div></div>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="brand"><img src="assets/img/logo.svg" alt="Citro" width="36" height="36"> Citro</a>
+      <nav class="nav-links">
+        <a href="index.html" data-page="index.html">Accueil</a>
+        <a href="shop.html" data-page="shop.html">Boutique</a>
+        <a href="contact.html" data-page="contact.html">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-switch" aria-label="Changer de thème"><span class="knob"></span></button>
+        <button class="icon-btn" data-cart-open aria-label="Ouvrir le panier">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293A1 1 0 0 0 5.414 17H17M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM9 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+          <span class="cart-count">0</span>
+        </button>
+        <button class="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="shop-hero">
+      <div class="container">
+        <span class="eyebrow">Boutique</span>
+        <h1>Tous nos produits</h1>
+        <p>Filtrez par catégorie, recherchez un produit, ou triez par prix et popularité.</p>
+      </div>
+    </section>
+
+    <section style="padding-top:0;">
+      <div class="container">
+
+        <div class="toolbar">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="search-input" placeholder="Rechercher un produit...">
+          </div>
+          <select class="sort-select" id="sort-select">
+            <option value="default">Trier par : Pertinence</option>
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix décroissant</option>
+            <option value="popularity">Popularité</option>
+          </select>
+        </div>
+
+        <div class="filters" id="filters"></div>
+
+        <div class="grid grid-3" id="product-grid" style="margin-top:var(--space-md);"></div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <a href="index.html" class="brand"><img src="assets/img/logo.svg" alt="Citro" width="36" height="36"> Citro</a>
+        <nav class="footer-links">
+          <a href="index.html">Accueil</a>
+          <a href="shop.html">Boutique</a>
+          <a href="contact.html">Contact</a>
+          <a href="mentions-legales.html">Mentions légales</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">© 2026 Citro. Tous droits réservés.</div>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Retour en haut">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    const filtersWrap = document.querySelector("#filters");
+    const grid = document.querySelector("#product-grid");
+    const searchInput = document.querySelector("#search-input");
+    const sortSelect = document.querySelector("#sort-select");
+
+    let activeCategory = new URLSearchParams(location.search).get("category") || "all";
+
+    filtersWrap.innerHTML = CATEGORIES.map(
+      (c) => `<button class="chip ${c.id === activeCategory ? "active" : ""}" data-category="${c.id}">${c.label}</button>`
+    ).join("");
+
+    function renderProducts() {
+      const query = searchInput.value.trim().toLowerCase();
+      const sort = sortSelect.value;
+
+      let list = PRODUCTS.filter((p) => activeCategory === "all" || p.category === activeCategory);
+      if (query) {
+        list = list.filter((p) => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
+      }
+
+      if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
+      if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
+      if (sort === "popularity") list = [...list].sort((a, b) => b.reviews - a.reviews);
+
+      grid.innerHTML = list.length
+        ? list.map((p, i) => productCardHTML(p, i)).join("")
+        : `<p class="empty-state">Aucun produit ne correspond à votre recherche.</p>`;
+
+      observeReveal(grid);
+    }
+
+    filtersWrap.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+      activeCategory = chip.dataset.category;
+      filtersWrap.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c === chip));
+      renderProducts();
+    });
+
+    // Wait for a short pause in typing before re-filtering, so a fast typist
+    // doesn't trigger a full re-render on every keystroke.
+    let searchTimer;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(renderProducts, 200);
+    });
+    sortSelect.addEventListener("change", renderProducts);
+
+    renderProducts();
+  </script>
+</body>
+</html>
